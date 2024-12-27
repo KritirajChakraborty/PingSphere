@@ -9,6 +9,11 @@ const MessageInput = ({
   openEmojiPicker,
   setEmojiPicker,
 }) => {
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      onClick();
+    }
+  };
   return (
     <div className="flex items-center justify-between gap-2 relative border-t border-gray-300 w-full mt-auto pt-3">
       <div className="relative">
@@ -31,6 +36,7 @@ const MessageInput = ({
         placeholder="Type a message..."
         value={text}
         onChange={onTextChange}
+        onKeyDown={handleKeyDown}
       />
 
       <button

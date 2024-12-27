@@ -1,9 +1,9 @@
-import React, { createContext, useContext, useReducer } from "react";
+import React, { createContext, useContext, useEffect, useReducer } from "react";
 
 const AppContext = createContext(null);
 
 const initialState = {
-  user: null,
+  user: JSON.parse(localStorage.getItem("user")) || null,
   contacts: [],
   messages: [],
   selectedContact: null,
@@ -35,6 +35,14 @@ const appReducer = (state, action) => {
 
 export const AppProvider = ({ children }) => {
   const [appState, dispatch] = useReducer(appReducer, initialState);
+
+  useEffect(() => {
+    if (appState.user) {
+      localStorage.setItem("user", JSON.stringify(appState.user));
+    } else {
+      localStorage.removeItem("user");
+    }
+  }, [appState]);
 
   return (
     <AppContext.Provider value={{ appState, dispatch }}>

@@ -45,11 +45,17 @@ const ChatWindow = () => {
       </div>
     );
   }
-  if (error)
-    return <p className="p-4 flex items-center">Oops, something broke</p>;
+  if (error) {
+    console.log(error);
+    return (
+      <p className="p-4 flex items-center justify-center">
+        Oops, something broke on Instant's end. Please refresh the page or
+        delete the selected contact
+      </p>
+    );
+  }
 
   const handleEmojiClick = (e) => {
-    console.log(e.emoji);
     setInput((prev) => (prev += e.emoji));
     setEmojiPicker(false);
   };
@@ -61,8 +67,6 @@ const ChatWindow = () => {
   const handleSubmit = () => {
     if (input.length < 1) return;
     const timestamp = new Date().getTime();
-    console.log(timestamp);
-    console.log(input);
     db.transact([
       db.tx.messages[id()].update({
         text: input,
@@ -74,10 +78,8 @@ const ChatWindow = () => {
     setInput("");
   };
 
-  console.log(data);
-
   return (
-    <div className="w-full md:flex-1 h-[calc(100vh-2rem)] bg-stone-200 rounded-lg flex flex-col p-4 gap-4">
+    <div className="w-full md:flex-1  md:h-full bg-stone-200 rounded-lg flex flex-col p-4 gap-4">
       <div className="flex items-center justify-between border-b border-gray-300 pb-3">
         <h3 className="text-3xl font-semibold tracking-tighter text-stone-700 ">
           {appState?.selectedContact?.name}
@@ -90,9 +92,11 @@ const ChatWindow = () => {
         </button>
       </div>
       {isLoading ? (
-        <p className="italic flex items-center text-gray-700">Loading...</p>
+        <p className="italic flex items-center justify-center text-gray-700">
+          Loading...
+        </p>
       ) : data?.messages.length ? (
-        <ul className="flex flex-col justify-start p-3 gap-4 overflow-y-auto w-full h-full">
+        <ul className="flex flex-col justify-start p-3 gap-4 overflow-y-scroll w-full h-72 md:h-full">
           {data.messages.map((message) => (
             <li
               key={message.id}
@@ -107,7 +111,13 @@ const ChatWindow = () => {
                     : "bg-gray-300 text-gray-800"
                 }`}
               >
-                <p className="text-lg font-medium break-words">
+                <p
+                  style={{
+                    wordBreak: "break-word",
+                    whiteSpace: "normal",
+                  }}
+                  className="text-lg font-medium"
+                >
                   {message.text}
                 </p>
                 <span className="text-xs italic">{`^ ${message.sender}`}</span>
