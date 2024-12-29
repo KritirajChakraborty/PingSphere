@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { db } from "../db";
+import { useEffect, useState } from "react";
+import { db, getAllMessages } from "../db/db";
 import { id } from "@instantdb/react";
 import MessageInput from "./MessageInput";
 import { useAppContext } from "../context/AppContext";
@@ -8,9 +8,17 @@ const ChatWindow = () => {
   const [input, setInput] = useState("");
   const [openEmojiPicker, setEmojiPicker] = useState(false);
   const { appState, dispatch } = useAppContext();
-
+  const AllMessages = getAllMessages();
   const user = appState?.user?.name;
   const endUser = appState.selectedContact?.name;
+
+  useEffect(() => {
+    dispatch({
+      type: "SET_MESSAGE",
+      payload: AllMessages,
+    });
+  }, [appState.messages]);
+
   const query = {
     messages: {
       $: {
@@ -67,6 +75,15 @@ const ChatWindow = () => {
   const handleSubmit = () => {
     if (input.length < 1) return;
     const timestamp = new Date().getTime();
+    dispatch({
+      type: "ADD_MESSAGE",
+      payload: {
+        text: input,
+        sender: user,
+        reciever: endUser,
+        createdAt: timestamp,
+      },
+    });
     db.transact([
       db.tx.messages[id()].update({
         text: input,
@@ -92,12 +109,10 @@ const ChatWindow = () => {
         </button>
       </div>
       {isLoading ? (
-        <p className="italic flex items-center justify-center text-gray-700">
-          Loading...
-        </p>
-      ) : data?.messages.length ? (
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-solid"></div>
+      ) : data?.messages?.length ? (
         <ul className="flex flex-col justify-start p-3 gap-4 overflow-y-scroll w-full h-72 md:h-full">
-          {data.messages.map((message) => (
+          {data?.messages?.map((message) => (
             <li
               key={message.id}
               className={`flex ${
@@ -127,6 +142,10 @@ const ChatWindow = () => {
                   className="ml-2 bg-red-500 text-white text-xs w-10 h-10 rounded-lg shadow hover:bg-red-600"
                   onClick={(e) => {
                     db.transact([db.tx.messages[message.id].delete()]);
+                    dispatch({
+                      type: "DELETE_MESSAGE",
+                      payload: message.createdAt,
+                    });
                   }}
                 >
                   X

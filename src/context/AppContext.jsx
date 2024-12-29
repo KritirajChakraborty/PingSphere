@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useReducer } from "react";
+import { createContext, useContext, useEffect, useReducer } from "react";
 
 const AppContext = createContext(null);
 
@@ -16,18 +16,33 @@ const appReducer = (state, action) => {
 
     case "LOGOUT":
       localStorage.removeItem("authUser");
-      return { user: null };
+      return { ...initialState, user: null };
 
-    case "SET_CONTACTS":
-      return { ...state, contacts: action.payload };
-    case "SET_MESSAGES":
+    case "SET_CONTACT":
+      return { ...state, contacts: [...state.contacts, action.payload] };
+    case "REMOVE_CONTACT":
+      return {
+        ...state,
+        contacts: state.contacts.filter(
+          (contact) => contact.name != action.payload.name
+        ),
+      };
+    case "SET_MESSAGE":
       return { ...state, messages: action.payload };
+    case "ADD_MESSAGE":
+      return { ...state, messages: [...state.messages, action.payload] };
+    case "DELETE_MESSAGE":
+      return {
+        ...state,
+        messages: state.messages.filter(
+          (message) => message.createdAt != action.payload
+        ),
+      };
     case "SELECT_CONTACT":
       return { ...state, selectedContact: action.payload };
     case "UNSELECT_CONTACT":
       return { ...state, selectedContact: null };
-    case "ADD_MESSAGE":
-      return { ...state, messages: [...state.messages, action.payload] };
+
     default:
       return state;
   }

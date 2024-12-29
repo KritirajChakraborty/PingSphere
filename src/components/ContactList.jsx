@@ -1,22 +1,21 @@
 import { useEffect, useState } from "react";
-import { db } from "../db";
+import { db } from "../db/db";
 import { useAppContext } from "../context/AppContext";
 
 function ContactList() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
   const { appState, dispatch } = useAppContext();
 
   const { data, isLoading, error } = db.useQuery({
     contacts: {},
   });
   useEffect(() => {
-    if (searchResults.length < 1) {
+    if (appState.contacts.length < 1) {
       dispatch({
         type: "UNSELECT_CONTACT",
       });
     }
-  }, [searchResults]);
+  }, [appState.contacts]);
 
   const handleSearch = () => {
     if (searchQuery.length < 1) return;
@@ -27,7 +26,10 @@ function ContactList() {
       alert("No User Found!");
       return;
     }
-    setSearchResults((prev) => [...prev, selectedContact]);
+    dispatch({
+      type: "SET_CONTACT",
+      payload: selectedContact,
+    });
     dispatch({
       type: "SELECT_CONTACT",
       payload: selectedContact,
@@ -52,9 +54,10 @@ function ContactList() {
     dispatch({
       type: "UNSELECT_CONTACT",
     });
-    setSearchResults((prev) =>
-      prev.filter((prevUser) => prevUser.name != user.name)
-    );
+    dispatch({
+      type: "REMOVE_CONTACT",
+      payload: user,
+    });
   };
 
   return (
@@ -86,8 +89,8 @@ function ContactList() {
       {error && <p className="text-red-500">{error}</p>}
 
       <div className="w-full h-32 md:h-80 overflow-y-scroll">
-        {searchResults.length > 0 ? (
-          searchResults.map((user) => {
+        {appState?.contacts?.length > 0 ? (
+          appState?.contacts?.map((user) => {
             return (
               <span
                 key={user.id}
@@ -107,7 +110,7 @@ function ContactList() {
             );
           })
         ) : (
-          <p>No contacts found</p>
+          <p className="text-red-500">No contacts found</p>
         )}
       </div>
     </div>
